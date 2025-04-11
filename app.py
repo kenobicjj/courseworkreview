@@ -230,6 +230,36 @@ def update_submission(submission_id):
         logger.error(f"Error updating submission: {str(e)}")
         return jsonify({'success': False, 'error': str(e)}), 400
 
+@app.route('/test-ollama', methods=['GET'])
+def test_ollama():
+    """Test connection to Ollama API"""
+    try:
+        ollama_url = os.environ.get("OLLAMA_API_URL", "http://localhost:11434")
+        logger.debug(f"Testing connection to Ollama at {ollama_url}")
+        
+        # Try to connect to the Ollama API
+        available = ollama_client.is_available()
+        
+        if available:
+            return jsonify({
+                'status': 'success',
+                'message': 'Successfully connected to Ollama API',
+                'url': ollama_url
+            })
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Could not connect to Ollama API',
+                'url': ollama_url
+            }), 500
+    except Exception as e:
+        logger.error(f"Error testing Ollama: {str(e)}")
+        return jsonify({
+            'status': 'error',
+            'message': f'Error: {str(e)}',
+            'url': os.environ.get("OLLAMA_API_URL", "http://localhost:11434")
+        }), 500
+
 @app.route('/clear-data', methods=['POST'])
 def clear_data():
     """Clear all data (for testing)"""
