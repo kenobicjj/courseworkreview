@@ -6,6 +6,10 @@ from werkzeug.utils import secure_filename
 import uuid
 import tempfile
 import shutil
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 from services.data_store import DataStore
 from services.pdf_processor import PDFProcessor
