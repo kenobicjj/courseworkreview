@@ -6,21 +6,26 @@ import time
 
 logger = logging.getLogger(__name__)
 
+
 class OllamaClient:
     """
     Client for interacting with the Ollama API to analyze notebooks.
     """
-    
+
     def __init__(self):
         """Initialize the Ollama client with default settings."""
-        self.base_url = os.environ.get("OLLAMA_API_URL", "http://localhost:11434")
-        self.model = os.environ.get("OLLAMA_MODEL", "llama2")
+        # Remove any whitespace from the URL in case there's a leading space in .env
+        api_url = os.environ.get("OLLAMA_API_URL", "http://localhost:11434")
+        self.base_url = api_url.strip()
+        self.model = os.environ.get("OLLAMA_MODEL", "gemma3")
         self.max_retries = 3
         self.retry_delay = 2  # seconds
-        
+
         # Log the API URL being used (without exposing sensitive information)
-        logger.info(f"Ollama API configured with base URL: {self.base_url} and model: {self.model}")
-    
+        logger.info(
+            f"Ollama API configured with base URL: {self.base_url} and model: {self.model}"
+        )
+
     def generate_feedback(self, prompt, temperature=0.7, max_tokens=2048):
         """
         Generate feedback for a notebook using Ollama.
@@ -37,7 +42,7 @@ class OllamaClient:
             Exception: If there's an error communicating with Ollama.
         """
         url = f"{self.base_url}/api/generate"
-        
+
         payload = {
             "model": self.model,
             "prompt": prompt,
@@ -45,13 +50,13 @@ class OllamaClient:
             "max_tokens": max_tokens,
             "stream": False
         }
-        
+
         # Try with retries
         for attempt in range(self.max_retries):
             try:
                 response = requests.post(url, json=payload)
                 response.raise_for_status()
-                
+
                 result = response.json()
                 return result.get('response', '')
             except requests.exceptions.RequestException as e:
@@ -61,14 +66,13 @@ class OllamaClient:
                 else:
                     error_msg = f"Failed to generate feedback after {self.max_retries} attempts: {str(e)}"
                     logger.error(error_msg)
-                    
+
                     # Return a fallback message if Ollama is not available
                     return (
                         "Error: Unable to generate automated feedback due to Ollama service unavailability. "
                         "Please check that Ollama is running locally or provide the correct OLLAMA_API_URL "
-                        "environment variable."
-                    )
-    
+                        "environment variable.")
+
     def is_available(self):
         """
         Check if the Ollama service is available.
