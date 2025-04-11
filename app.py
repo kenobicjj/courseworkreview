@@ -36,9 +36,13 @@ def allowed_file(filename, allowed_extensions):
 @app.route('/')
 def index():
     """Render the main page"""
+    # Get Ollama API URL for display in the UI
+    ollama_url = os.environ.get("OLLAMA_API_URL", "http://localhost:11434")
+    
     return render_template('index.html', 
                           criteria=data_store.get_criteria(),
-                          submissions=data_store.get_submissions())
+                          submissions=data_store.get_submissions(),
+                          ollama_url=ollama_url)
 
 @app.route('/upload-criteria', methods=['POST'])
 def upload_criteria():

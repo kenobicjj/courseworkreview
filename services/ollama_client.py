@@ -17,6 +17,9 @@ class OllamaClient:
         self.model = os.environ.get("OLLAMA_MODEL", "llama2")
         self.max_retries = 3
         self.retry_delay = 2  # seconds
+        
+        # Log the API URL being used (without exposing sensitive information)
+        logger.info(f"Ollama API configured with base URL: {self.base_url} and model: {self.model}")
     
     def generate_feedback(self, prompt, temperature=0.7, max_tokens=2048):
         """

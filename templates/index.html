@@ -145,6 +145,17 @@
                             </div>
                         </form>
                         
+                        <div class="alert alert-info" role="alert">
+                            <h6><i class="fas fa-info-circle me-2"></i>Ollama Connection</h6>
+                            <p class="small mb-1">To use your local Ollama:</p>
+                            <ol class="small">
+                                <li>Run Ollama on your computer</li>
+                                <li>Use a secure tunnel like ngrok: <code>ngrok http 11434</code></li>
+                                <li>Set the <code>OLLAMA_API_URL</code> environment variable to the ngrok URL</li>
+                            </ol>
+                            <p class="small mb-0">Current API: <code>{{ ollama_url }}</code></p>
+                        </div>
+                        
                         <hr>
                         
                         <form action="{{ url_for('clear_data') }}" method="post" onsubmit="return confirm('Are you sure you want to clear all data? This cannot be undone.');">
