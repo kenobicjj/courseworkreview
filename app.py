@@ -354,6 +354,131 @@ def test_ollama():
             'url': os.environ.get("OLLAMA_API_URL", "http://localhost:11434")
         }), 500
 
+@app.route('/update_settings', methods=['POST'])
+def update_settings():
+    """Update analysis settings"""
+    try:
+        preamble = request.form.get('preamble', '')
+        postamble = request.form.get('postamble', '')
+        
+        # Get existing settings or create new ones
+        settings = AnalysisSettings.query.first()
+        if not settings:
+            settings = AnalysisSettings()
+            db.session.add(settings)
+        
+        # Update settings
+        settings.preamble = preamble
+        settings.postamble = postamble
+        settings.updated_at = datetime.utcnow()
+        
+        # Save to database
+        db.session.commit()
+        
+        flash('Analysis settings updated successfully', 'success')
+    except Exception as e:
+        logger.error(f"Error updating settings: {str(e)}")
+        flash(f'Error updating settings: {str(e)}', 'danger')
+        db.session.rollback()
+    
+    return redirect(url_for('index'))
+
+@app.route('/delete_submission/<int:submission_id>', methods=['GET'])
+def delete_submission(submission_id):
+    """Delete a specific submission"""
+    try:
+        # Get the submission
+        submission = Submission.query.get(submission_id)
+        if not submission:
+            flash('Submission not found', 'warning')
+            return redirect(url_for('index'))
+        
+        # Get the submission folder path
+        folder_path = submission.file_path
+        
+        # Delete from database
+        db.session.delete(submission)  # This will cascade delete files
+        db.session.commit()
+        
+        # Delete the folder if it exists
+        if folder_path and os.path.exists(folder_path):
+            if os.path.isdir(folder_path):
+                shutil.rmtree(folder_path)
+        
+        flash(f'Submission "{submission.folder_name}" deleted successfully', 'success')
+    except Exception as e:
+        logger.error(f"Error deleting submission: {str(e)}")
+        flash(f'Error deleting submission: {str(e)}', 'danger')
+        db.session.rollback()
+    
+    return redirect(url_for('index'))
+
+@app.route('/view-file/<int:submission_id>/<path:filename>')
+def view_file(submission_id, filename):
+    """View the contents of a file"""
+    try:
+        # Get the submission and its directory
+        submission = Submission.query.get(submission_id)
+        if not submission:
+            return "Submission not found", 404
+        
+        # Find the specific file
+        file_obj = SubmissionFile.query.filter_by(
+            submission_id=submission_id, 
+            filename=filename
+        ).first()
+        
+        if not file_obj or not os.path.exists(file_obj.file_path):
+            return "File not found", 404
+        
+        # Read the file content
+        with open(file_obj.file_path, 'r') as f:
+            content = f.read()
+        
+        # Determine the file type for syntax highlighting
+        file_ext = os.path.splitext(filename)[1].lower()
+        language = ''
+        
+        if file_ext == '.ipynb':
+            language = 'json'
+        elif file_ext == '.py':
+            language = 'python'
+        elif file_ext == '.md':
+            language = 'markdown'
+        elif file_ext == '.csv':
+            language = 'csv'
+        elif file_ext in ['.js', '.json']:
+            language = 'javascript'
+        elif file_ext in ['.html', '.htm']:
+            language = 'html'
+        elif file_ext == '.css':
+            language = 'css'
+        
+        return render_template('file_viewer.html', 
+                             filename=filename,
+                             content=content,
+                             language=language,
+                             submission=submission.folder_name)
+    except Exception as e:
+        logger.error(f"Error viewing file: {str(e)}")
+        return f"Error viewing file: {str(e)}", 500
+
+@app.route('/analysis-progress')
+def analysis_progress():
+    """Get the current analysis progress"""
+    progress = session.get('analysis_progress', {})
+    
+    if progress:
+        return jsonify({
+            'in_progress': True,
+            'current': progress.get('current', 0),
+            'total': progress.get('total', 0)
+        })
+    else:
+        return jsonify({
+            'in_progress': False
+        })
+
 @app.route('/clear-data', methods=['POST'])
 def clear_data():
     """Clear all data (for testing)"""
