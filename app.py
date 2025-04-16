@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", str(uuid.uuid4()))
 
-# Configure database
+# # Configure database
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
@@ -34,10 +34,10 @@ UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Import models and initialize the database
+# # Import models and initialize the database
 from models import db, Criteria, Submission, SubmissionFile, AnalysisSettings
 
-# Initialize the database with the app
+# # Initialize the database with the app
 db.init_app(app)
 
 # Import services (after db initialization)
@@ -50,7 +50,7 @@ pdf_processor = PDFProcessor()
 notebook_processor = NotebookProcessor()
 ollama_client = OllamaClient()
 
-# Create all tables in the database
+# # Create all tables in the database
 with app.app_context():
     db.create_all()
     # Create default analysis settings if they don't exist
