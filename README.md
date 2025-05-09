@@ -1,9 +1,9 @@
 # Assessment Evaluation System
 
 An open-source assessment evaluation system using Ollama that analyzes submitted Jupyter notebooks against criteria and generates feedback.
-![Jupyter Analyser Class Diagram]([images/ipynbclass.png))
-![Jupyter Analyser Sequence Diagram](images/ipynbsequence.png))
-[![Jupyter Analyser screenshot](https://github.com/kenobicjj/courseworkreview/blob/main/images/jupyter.jpg)
+![Jupyter Analyser Class Diagram]([images/ipynbclass.png)
+![Jupyter Analyser Sequence Diagram](images/ipynbsequence.png)
+![Jupyter Analyser screenshot](https://github.com/kenobicjj/courseworkreview/blob/main/images/jupyter.jpg)
 
 ## Features
 
